@@ -204,7 +204,6 @@ bool TinyGPSPlus::endOfTermHandler()
         break;
       case GPS_SENTENCE_PUBXDATE:
         date.commit();
-        time.commit();
         break;
       }
 
@@ -242,7 +241,7 @@ bool TinyGPSPlus::endOfTermHandler()
     return false;
   }
   
-  if (curSentenceType = GPS_SENTENCE_PUBX && curTermNumber == 1) 
+  if (curSentenceType == GPS_SENTENCE_PUBX && curTermNumber == 1) 
   {
 	if (!strcmp(term, _PUBXDateterm))
       curSentenceType = GPS_SENTENCE_PUBXDATE;
@@ -254,7 +253,6 @@ bool TinyGPSPlus::endOfTermHandler()
     case COMBINE(GPS_SENTENCE_GPRMC, 1): // Time in both sentences
     case COMBINE(GPS_SENTENCE_GPGGA, 1):
     case COMBINE(GPS_SENTENCE_PUBX,  2):
-    case COMBINE(GPS_SENTENCE_PUBXDATE, 2):
       time.setTime(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 2): // GPRMC validity
