@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define _GPRMCterm   "GPRMC"
 #define _GPGGAterm   "GPGGA"
+#define _PUBXterm   "PUBX"
 
 TinyGPSPlus::TinyGPSPlus()
   :  parity(0)
@@ -188,6 +189,18 @@ bool TinyGPSPlus::endOfTermHandler()
         satellites.commit();
         hdop.commit();
         break;
+      case GPS_SENTENCE_PUBX:
+        time.commit();
+        if (sentenceHasFix)
+        {
+           location.commit();
+           altitude.commit();
+           speed.commit();
+           course.commit();
+        }
+        satellites.commit();
+        hdop.commit();
+        break;
       }
 
       // Commit all custom listeners of this sentence type
@@ -211,6 +224,8 @@ bool TinyGPSPlus::endOfTermHandler()
       curSentenceType = GPS_SENTENCE_GPRMC;
     else if (!strcmp(term, _GPGGAterm))
       curSentenceType = GPS_SENTENCE_GPGGA;
+    else if (!strcmp(term, _PUBXterm))
+      curSentenceType = GPS_SENTENCE_PUBX;
     else
       curSentenceType = GPS_SENTENCE_OTHER;
 
@@ -227,6 +242,7 @@ bool TinyGPSPlus::endOfTermHandler()
   {
     case COMBINE(GPS_SENTENCE_GPRMC, 1): // Time in both sentences
     case COMBINE(GPS_SENTENCE_GPGGA, 1):
+    case COMBINE(GPS_SENTENCE_PUBX,  2):
       time.setTime(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 2): // GPRMC validity
@@ -234,39 +250,52 @@ bool TinyGPSPlus::endOfTermHandler()
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 3): // Latitude
     case COMBINE(GPS_SENTENCE_GPGGA, 2):
+    case COMBINE(GPS_SENTENCE_PUBX,  3):
       location.setLatitude(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 4): // N/S
     case COMBINE(GPS_SENTENCE_GPGGA, 3):
+    case COMBINE(GPS_SENTENCE_PUBX,  4):
       location.rawNewLatData.negative = term[0] == 'S';
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 5): // Longitude
     case COMBINE(GPS_SENTENCE_GPGGA, 4):
+    case COMBINE(GPS_SENTENCE_PUBX,  5):
       location.setLongitude(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 6): // E/W
     case COMBINE(GPS_SENTENCE_GPGGA, 5):
+    case COMBINE(GPS_SENTENCE_PUBX,  6):
       location.rawNewLngData.negative = term[0] == 'W';
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 7): // Speed (GPRMC)
+    case COMBINE(GPS_SENTENCE_PUBX, 11):
       speed.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 8): // Course (GPRMC)
+    case COMBINE(GPS_SENTENCE_PUBX,  12):
       course.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 9): // Date (GPRMC)
+    case COMBINE(GPS_SENTENCE_PUBX,  9):
       date.setDate(term);
       break;
+	case COMBINE(GPS_SENTENCE_PUBX,  8): // Fix data (PUBX)
+	  sentenceHasFix = (term[0] != 'N' && term[1] != 'F');
+	  break;
     case COMBINE(GPS_SENTENCE_GPGGA, 6): // Fix data (GPGGA)
       sentenceHasFix = term[0] > '0';
       break;
     case COMBINE(GPS_SENTENCE_GPGGA, 7): // Satellites used (GPGGA)
+    case COMBINE(GPS_SENTENCE_PUBX, 18):
       satellites.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPGGA, 8): // HDOP
+    case COMBINE(GPS_SENTENCE_PUBX, 15):
       hdop.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPGGA, 9): // Altitude (GPGGA)
+    case COMBINE(GPS_SENTENCE_PUBX,  7):
       altitude.set(term);
       break;
   }
