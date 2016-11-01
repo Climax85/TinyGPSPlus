@@ -242,7 +242,7 @@ public:
   uint32_t passedChecksum()   const { return passedChecksumCount; }
 
 private:
-  enum {GPS_SENTENCE_GPGGA, GPS_SENTENCE_GPRMC, GPS_SENTENCE_PUBX, GPS_SENTENCE_OTHER};
+  enum {GPS_SENTENCE_GPGGA, GPS_SENTENCE_GPRMC, GPS_SENTENCE_PUBX, GPS_SENTENCE_PUBXDATE, GPS_SENTENCE_OTHER};
 
   // parsing state variables
   uint8_t parity;

@@ -27,9 +27,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <stdlib.h>
 
-#define _GPRMCterm   "GPRMC"
-#define _GPGGAterm   "GPGGA"
-#define _PUBXterm   "PUBX"
+#define _GPRMCterm    "GPRMC"
+#define _GPGGAterm    "GPGGA"
+#define _PUBXterm     "PUBX"
+#define _PUBXDateterm "04"
 
 TinyGPSPlus::TinyGPSPlus()
   :  parity(0)
@@ -201,6 +202,10 @@ bool TinyGPSPlus::endOfTermHandler()
         satellites.commit();
         hdop.commit();
         break;
+      case GPS_SENTENCE_PUBXDATE:
+        date.commit();
+        time.commit();
+        break;
       }
 
       // Commit all custom listeners of this sentence type
@@ -236,6 +241,12 @@ bool TinyGPSPlus::endOfTermHandler()
 
     return false;
   }
+  
+  if (curSentenceType = GPS_SENTENCE_PUBX && curTermNumber == 1) 
+  {
+	if (!strcmp(term, _PUBXDateterm))
+      curSentenceType = GPS_SENTENCE_PUBXDATE;
+  }
 
   if (curSentenceType != GPS_SENTENCE_OTHER && term[0])
     switch(COMBINE(curSentenceType, curTermNumber))
@@ -243,6 +254,7 @@ bool TinyGPSPlus::endOfTermHandler()
     case COMBINE(GPS_SENTENCE_GPRMC, 1): // Time in both sentences
     case COMBINE(GPS_SENTENCE_GPGGA, 1):
     case COMBINE(GPS_SENTENCE_PUBX,  2):
+    case COMBINE(GPS_SENTENCE_PUBXDATE, 2):
       time.setTime(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 2): // GPRMC validity
@@ -277,7 +289,7 @@ bool TinyGPSPlus::endOfTermHandler()
       course.set(term);
       break;
     case COMBINE(GPS_SENTENCE_GPRMC, 9): // Date (GPRMC)
-    case COMBINE(GPS_SENTENCE_PUBX,  9):
+    case COMBINE(GPS_SENTENCE_PUBXDATE, 3):
       date.setDate(term);
       break;
 	case COMBINE(GPS_SENTENCE_PUBX,  8): // Fix data (PUBX)
