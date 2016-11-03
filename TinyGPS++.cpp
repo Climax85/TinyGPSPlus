@@ -244,7 +244,9 @@ bool TinyGPSPlus::endOfTermHandler()
   if (curSentenceType == GPS_SENTENCE_PUBX && curTermNumber == 1) 
   {
 	if (!strcmp(term, _PUBXDateterm))
+	{
       curSentenceType = GPS_SENTENCE_PUBXDATE;
+	}
   }
 
   if (curSentenceType != GPS_SENTENCE_OTHER && term[0])
